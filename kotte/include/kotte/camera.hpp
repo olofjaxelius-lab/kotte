@@ -4,7 +4,7 @@
 
 namespace kotte
 {
-    class Camera final{
+    class Camera final {
     public:
         explicit Camera(Vector2 viewport_size) noexcept;
 

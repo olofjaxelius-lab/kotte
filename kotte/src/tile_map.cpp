@@ -7,42 +7,42 @@
 namespace kotte
 {
     TileMap::TileMap(int width, int height)
-        : width_{width}
-        , height_{height}
+        : width_{ width }
+        , height_{ height }
     {
-        if(width <= 0 || height <= 0){
-            throw std::invalid_argument{"Tile map dimensions must be positive."};
+        if (width <= 0 || height <= 0) {
+            throw std::invalid_argument{ "Tile map dimensions must be positive." };
         }
 
         tiles_.resize(static_cast<std::size_t>(width) * static_cast<std::size_t>(height));
     }
 
-    int TileMap::width() const noexcept{
+    int TileMap::width() const noexcept {
         return width_;
     }
 
-    int TileMap::height() const noexcept{
+    int TileMap::height() const noexcept {
         return height_;
     }
 
-    std::size_t TileMap::tile_count() const noexcept{
+    std::size_t TileMap::tile_count() const noexcept {
         return tiles_.size();
     }
 
-    bool TileMap::contains(int x, int y) const noexcept{
+    bool TileMap::contains(int x, int y) const noexcept {
         return x >= 0 && x < width_ && y >= 0 && y < height_;
     }
 
-    Tile& TileMap::at(int x, int y){
+    Tile& TileMap::at(int x, int y) {
         return tiles_.at(index(x, y));
     }
 
-    const Tile& TileMap::at(int x, int y) const{
+    const Tile& TileMap::at(int x, int y) const {
         return tiles_.at(index(x, y));
     }
 
-    TileRange TileMap::tiles_overlapping(Rectangle world_view, int tile_size) const noexcept{
-        if(tile_size <= 0){
+    TileRange TileMap::tiles_overlapping(Rectangle world_view, int tile_size) const noexcept {
+        if (tile_size <= 0) {
             return {};
         }
 
@@ -60,20 +60,20 @@ namespace kotte
         };
     }
 
-    std::size_t TileMap::index(int x, int y) const{
-        if(!contains(x, y)){
-            throw std::out_of_range{"Tile coordinates are outside the map."};
+    std::size_t TileMap::index(int x, int y) const {
+        if (!contains(x, y)) {
+            throw std::out_of_range{ "Tile coordinates are outside the map." };
         }
 
         return static_cast<std::size_t>(y) * static_cast<std::size_t>(width_)
             + static_cast<std::size_t>(x);
     }
 
-    TileMap make_room(int width, int height, Random& random){
-        TileMap room{width, height};
+    TileMap make_room(int width, int height, Random& random) {
+        TileMap room{ width, height };
 
-        for(int y = 0; y < room.height(); ++y){
-            for(int x = 0; x < room.width(); ++x){
+        for (int y = 0; y < room.height(); ++y) {
+            for (int x = 0; x < room.width(); ++x) {
                 Tile& tile = room.at(x, y);
                 const bool boundary = x == 0 || y == 0
                     || x == room.width() - 1 || y == room.height() - 1;

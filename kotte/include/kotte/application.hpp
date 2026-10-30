@@ -31,7 +31,13 @@ namespace kotte
         std::size_t enemy_turns = 0;
     };
 
-    class Application final{
+    enum class RoundState {
+        Playing,
+        Won,
+        Lost
+    };
+
+    class Application final {
     public:
         Application(
             int window_width,
@@ -47,6 +53,9 @@ namespace kotte
         void request_exit() noexcept;
 
     private:
+
+        RoundState round_state_ = RoundState::Playing;
+
         struct FrameActions final {
             Vector2 player_movement_direction{};
             bool place_bomb = false;
@@ -71,6 +80,8 @@ namespace kotte
         struct BlastEffect final {
             std::vector<Vector2> tile_centres;
             float remaining_seconds = 0.0f;
+            bool player_hit = false;
+            bool bomb_hit = false;
         };
 
         void run_frame(float delta_time);
@@ -87,6 +98,11 @@ namespace kotte
         void queue_bomb_placement();
         void apply_entity_destructions();
         void apply_bomb_placements();
+        void update_round_state();
+        void restart_round();
+        void pickup_powerup();
+        void update_blast_powerup_timer(float delta_time);
+        void update_shield_powerup_timer(float delta_time);
         [[nodiscard]] bool resolve_blast_tile(
             BlastEffect& effect,
             int column,
@@ -115,6 +131,7 @@ namespace kotte
         [[nodiscard]] static Vector2 cardinal_vector(CardinalDirection direction) noexcept;
         [[nodiscard]] CardinalDirection different_enemy_direction(CardinalDirection current_direction);
         [[nodiscard]] bool owner_has_active_bomb(EntityHandle owner) const noexcept;
+        [[nodiscard]] bool tile_has_live_bomb(Vector2 tile_position) const;
         [[nodiscard]] static Vector2 tile_centre(Vector2 world_position) noexcept;
         [[nodiscard]] static Vector2 tile_centre(int column, int row) noexcept;
         [[nodiscard]] static Color entity_color(EntityKind kind) noexcept;
@@ -126,19 +143,35 @@ namespace kotte
         static constexpr float enemy_speed_ = 80.0f;
         static constexpr float bomb_fuse_seconds_ = 2.0f;
         static constexpr std::uint8_t bomb_blast_range_ = 3;
+        static constexpr std::uint8_t max_bomb_blast_range_ = 5;
         static constexpr float blast_effect_seconds_ = 0.35f;
-        static constexpr Color background_color_{0x11, 0x22, 0x33, 0xff};
+        static constexpr Color background_color_{ 0x11, 0x22, 0x33, 0xff };
         static constexpr Color floor_colors_[3]{
             Color{0x38, 0x49, 0x52, 0xff},
             Color{0x3d, 0x4f, 0x59, 0xff},
             Color{0x42, 0x55, 0x60, 0xff}
         };
-        static constexpr Color player_color_{0xf2, 0xc1, 0x4e, 0xff};
-        static constexpr Color bomb_color_{0x20, 0x24, 0x2a, 0xff};
-        static constexpr Color blast_color_{0xf2, 0x8f, 0x3b, 0xe8};
-        static constexpr Color crate_color_{0xb0, 0x72, 0x3c, 0xff};
-        static constexpr Color enemy_color_{0xd9, 0x4f, 0x70, 0xff};
-        static constexpr Color wall_color_{0x78, 0x5f, 0x47, 0xff};
+        static constexpr Color player_color_{ 0xf2, 0xc1, 0x4e, 0xff };
+        static constexpr Color bomb_color_{ 0x20, 0x24, 0x2a, 0xff };
+        static constexpr Color blast_color_{ 0xf2, 0x8f, 0x3b, 0xe8 };
+        static constexpr Color crate_color_{ 0xb0, 0x72, 0x3c, 0xff };
+        static constexpr Color enemy_color_{ 0xd9, 0x4f, 0x70, 0xff };
+        static constexpr Color wall_color_{ 0x78, 0x5f, 0x47, 0xff };
+        static constexpr Color range_powerup_color_{ 0xff, 0xff, 0x00, 0xff };
+        static constexpr Color shield_powerup_color_{ 0x4c, 0xd9, 0xff, 0xff };
+
+        static constexpr std::size_t bomb_capacity_ = 3;
+        static constexpr float enemy_damage_ = 1.0f;
+        static constexpr float enemy_damage_cooldown_ = 1.0f;
+        float enemy_damage_timer_ = 0.0f;
+
+        std::uint8_t player_blast_range_ = bomb_blast_range_;
+        float blast_range_powerup_timer_ = 0.0f;
+        static constexpr float blast_range_powerup_duration_ = 10.0f;
+        bool blast_range_powerup_active_ = false;
+        static constexpr float shield_duration_ = 10.0f;
+        float shield_powerup_timer_ = 0.0f;
+        bool shield_powerup_active_ = false;
 
         Window window_; // Constructed first, destroyed last.
         Camera camera_;

@@ -32,7 +32,7 @@ namespace kotte
 
         struct Slot final {
             explicit Slot(Entity value)
-                : entity{std::move(value)}{
+                : entity{ std::move(value) } {
             }
 
             std::optional<Entity> entity;

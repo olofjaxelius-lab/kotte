@@ -5,7 +5,7 @@
 
 namespace kotte
 {
-    class Frame final{
+    class Frame final {
     public:
         explicit Frame(Color clear) noexcept;
         ~Frame() noexcept;
@@ -16,7 +16,7 @@ namespace kotte
         Frame& operator=(Frame&&) = delete;
     };
 
-    class Window final{
+    class Window final {
     public:
         // Vsync by default; provide a positive target_fps to use a software cap instead.
         Window(int width, int height, std::string_view title, int target_fps = 0);

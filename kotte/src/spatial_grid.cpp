@@ -8,12 +8,12 @@
 namespace kotte
 {
     SpatialGrid::SpatialGrid(Vector2 world_size, float cell_size)
-        : cell_size_{cell_size}
-        , columns_{0}
-        , rows_{0}
+        : cell_size_{ cell_size }
+        , columns_{ 0 }
+        , rows_{ 0 }
     {
-        if(world_size.x <= 0.0f || world_size.y <= 0.0f || cell_size <= 0.0f){
-            throw std::invalid_argument{"Spatial grid dimensions must be positive."};
+        if (world_size.x <= 0.0f || world_size.y <= 0.0f || cell_size <= 0.0f) {
+            throw std::invalid_argument{ "Spatial grid dimensions must be positive." };
         }
 
         columns_ = static_cast<int>(std::ceil(world_size.x / cell_size_));
@@ -21,13 +21,13 @@ namespace kotte
         cells_.resize(static_cast<std::size_t>(columns_) * static_cast<std::size_t>(rows_));
     }
 
-    void SpatialGrid::insert(EntityHandle entity_handle, Rectangle world_bounds){
+    void SpatialGrid::insert(EntityHandle entity_handle, Rectangle world_bounds) {
         const CellRange range = cells_overlapping(world_bounds);
 
         // An entity can cross a cell boundary, so add its handle to every cell
         // touched by its complete world-space bounds.
-        for(int row = range.first_row; row < range.past_last_row; ++row){
-            for(int column = range.first_column; column < range.past_last_column; ++column){
+        for (int row = range.first_row; row < range.past_last_row; ++row) {
+            for (int column = range.first_column; column < range.past_last_column; ++column) {
                 Cell& cell = at(column, row);
                 assert(std::ranges::find(cell, entity_handle) == cell.end());
                 cell.push_back(entity_handle);
@@ -35,17 +35,17 @@ namespace kotte
         }
     }
 
-    void SpatialGrid::remove(EntityHandle entity_handle, Rectangle world_bounds){
+    void SpatialGrid::remove(EntityHandle entity_handle, Rectangle world_bounds) {
         const CellRange range = cells_overlapping(world_bounds);
 
         // Remove the old references before an entity is inserted at its new
         // location. The entity itself continues to live in the owning store.
-        for(int row = range.first_row; row < range.past_last_row; ++row){
-            for(int column = range.first_column; column < range.past_last_column; ++column){
+        for (int row = range.first_row; row < range.past_last_row; ++row) {
+            for (int column = range.first_column; column < range.past_last_column; ++column) {
                 Cell& cell = at(column, row);
                 const std::size_t removed = std::erase(cell, entity_handle);
                 assert(removed == 1);
-                (void) removed;
+                (void)removed;
             }
         }
     }
@@ -53,8 +53,8 @@ namespace kotte
     void SpatialGrid::update(
         EntityHandle entity_handle,
         Rectangle old_world_bounds,
-        Rectangle new_world_bounds){
-        if(cells_overlapping(old_world_bounds) == cells_overlapping(new_world_bounds)){
+        Rectangle new_world_bounds) {
+        if (cells_overlapping(old_world_bounds) == cells_overlapping(new_world_bounds)) {
             return;
         }
 
@@ -62,14 +62,14 @@ namespace kotte
         insert(entity_handle, new_world_bounds);
     }
 
-    SpatialQuery SpatialGrid::query(Rectangle world_bounds) const{
+    SpatialQuery SpatialGrid::query(Rectangle world_bounds) const {
         SpatialQuery result;
         const CellRange range = cells_overlapping(world_bounds);
 
         // First gather every reference from the cells touched by the query.
         // A large entity may appear in more than one of those cells.
-        for(int row = range.first_row; row < range.past_last_row; ++row){
-            for(int column = range.first_column; column < range.past_last_column; ++column){
+        for (int row = range.first_row; row < range.past_last_row; ++row) {
+            for (int column = range.first_column; column < range.past_last_column; ++column) {
                 const Cell& cell = at(column, row);
                 ++result.cells_visited;
                 result.candidate_references += cell.size();
@@ -85,20 +85,20 @@ namespace kotte
         return result;
     }
 
-    int SpatialGrid::columns() const noexcept{
+    int SpatialGrid::columns() const noexcept {
         return columns_;
     }
 
-    int SpatialGrid::rows() const noexcept{
+    int SpatialGrid::rows() const noexcept {
         return rows_;
     }
 
-    float SpatialGrid::cell_size() const noexcept{
+    float SpatialGrid::cell_size() const noexcept {
         return cell_size_;
     }
 
-    CellRange SpatialGrid::cells_overlapping(Rectangle world_bounds) const noexcept{
-        if(world_bounds.width <= 0.0f || world_bounds.height <= 0.0f){
+    CellRange SpatialGrid::cells_overlapping(Rectangle world_bounds) const noexcept {
+        if (world_bounds.width <= 0.0f || world_bounds.height <= 0.0f) {
             return {};
         }
 
@@ -115,14 +115,14 @@ namespace kotte
         };
     }
 
-    SpatialGrid::Cell& SpatialGrid::at(int column, int row) noexcept{
+    SpatialGrid::Cell& SpatialGrid::at(int column, int row) noexcept {
         assert(column >= 0 && column < columns_ && row >= 0 && row < rows_);
         const std::size_t index = static_cast<std::size_t>(row) * static_cast<std::size_t>(columns_)
             + static_cast<std::size_t>(column);
         return cells_[index];
     }
 
-    const SpatialGrid::Cell& SpatialGrid::at(int column, int row) const noexcept{
+    const SpatialGrid::Cell& SpatialGrid::at(int column, int row) const noexcept {
         assert(column >= 0 && column < columns_ && row >= 0 && row < rows_);
         const std::size_t index = static_cast<std::size_t>(row) * static_cast<std::size_t>(columns_)
             + static_cast<std::size_t>(column);
